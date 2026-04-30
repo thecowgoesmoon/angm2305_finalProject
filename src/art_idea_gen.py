@@ -5,6 +5,7 @@ import os
 class AdjectiveLoader:
     def __init__(self, path): 
         self.path = path
+        self.items = []
         self.load()
 
     def load(self):
@@ -13,7 +14,24 @@ class AdjectiveLoader:
         with open(self.path, encoding="utf-8") as file:
                   self._items = [line.strip() for line in file if line.strip()]
     
-    
+       
+class Palette:
+   def __init__(self, n_colors=3):
+       self.count = max(1, int(n_colors))
+
+   def _random_hex(self):
+       return "#{:02x}{:02x}{:02x}".format(random.randint(0,255), random.randint(0,255)
+                                           , random.randint(0,255))
+   
+   def generate(self):
+       return [self._random_hex() for _ in range(self.count)]
+   
+   def print_palette(self):
+       palette = self.generate()
+       print(f"Color palette: {palette}")
+      
+       
+
 def main():
     human_personality = AdjectiveLoader('human_personality.txt').load()
     human_occupation = AdjectiveLoader('human_occupation.txt').load()
@@ -22,7 +40,12 @@ def main():
     environment_size = AdjectiveLoader('environment_size.txt').load()
     environment_setting = AdjectiveLoader('environment_setting.txt').load()
 
-  
+    palette_test = Palette(n_colors=3)
+    for i in range(1):
+        palette = palette_test.print_palette()
+        return palette
+
+
     #initialized window code below
     #pygame.init()
     #pygame.display.set_caption("Art Idea Generator")
