@@ -52,7 +52,7 @@ class HumanPrompt:
         h_occupation = random.choice(self.human_occupation)
         h_size = random.choice(self.human_size)
         colors = ",".join(palette)
-        return f"Human: {h_size} {h_persona} {h_occupation}; Palette: {colors}"
+        return f"Human: {h_size} {h_persona} {h_occupation}; Palette: {colors}\n"
     
 class EnvironmentPrompt:
     def __init__(self, environment_mood, environment_size, environment_setting):
@@ -65,7 +65,7 @@ class EnvironmentPrompt:
         e_size = random.choice(self.environment_size) 
         e_setting = random.choice(self.environment_setting)
         colors = ",".join(palette)
-        return f"Environment: {e_size} {e_mood} {e_setting}; Palette: {colors}"
+        return f"Environment: {e_size} {e_mood} {e_setting}; Palette: {colors}\n"
 
 class PromptGenerator:
     def __init__(self, human_prompt, environment_prompt, palette_gen):
@@ -93,21 +93,19 @@ def main():
 
     human_prompt = HumanPrompt(human_personality, human_occupation, human_size)
     environment_prompt = EnvironmentPrompt(environment_mood, environment_size, environment_setting)
-    palette_test = Palette(n_colors=3)
-    generator = PromptGenerator(human_prompt, environment_prompt, palette_test)
+    palette_generator = Palette(n_colors=3)
+    generator = PromptGenerator(human_prompt, environment_prompt, palette_generator)
 
-    human_result = generator.generate("h")
-    environment_result = generator.generate("e")
-    print("Generated prompts:")
-    print(human_result)
-    print(environment_result)
-
-   
-    for i in range(1):
-        palette = palette_test.print_palette()
-        return palette
-    
-    
+    while True:
+        choice = input("Human (h) or environment (e) prompt? (Press 'q' to quit!): ").strip().lower()
+        if choice in "q":
+            break
+        if choice == "h":
+            print(generator.generate("human_prompt"))
+        elif choice == "e":
+            print(generator.generate("environment_prompt"))
+        else:
+            print("Sorry! Please hit 'h' (human), 'e' (environment), or 'q' (quit) to continue!")
 
     #initialized window code below
     #pygame.init()
