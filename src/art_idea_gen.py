@@ -28,7 +28,7 @@ class AdjectiveLoader:
        
 class Palette:
    def __init__(self, n_colors=3):
-       self.count = max(1, int(n_colors))
+       self.count = int(n_colors)
 
    def _random_hex(self):
        return "#{:02x}{:02x}{:02x}".format(random.randint(0,255), random.randint(0,255)
@@ -40,6 +40,15 @@ class Palette:
    def print_palette(self):
        palette = self.generate()
        print(f"Color palette: {palette}")
+
+
+   def palette_amount():
+       sizes = {"3":3, "4":4,"5":5}
+       while True:
+           choice = input("Choose a palette size between 3 and 5!: ").strip()
+           if choice in sizes:
+               return sizes[choice]
+           print("Sorry! Please choose a number between 3 and 5!")
       
 class HumanPrompt:
     def __init__(self, human_personality, human_occupation, human_size):
@@ -74,14 +83,14 @@ class PromptGenerator:
         self.palette_gen = palette_gen
 
     def generate(self, prompt):
-        palette = self.palette_gen.generate() 
+        palette = self.palette_gen.generate()
         if prompt.lower().startswith("h"):
             return self.human_prompt.random_prompt(palette)
-        else: 
-            return self.environment_prompt.random_prompt(palette)
+        return self.environment_prompt.random_prompt(palette)
 
     def safe_load(path):
         return AdjectiveLoader(path)._items
+
 
 def main():
     human_personality = PromptGenerator.safe_load('human_personality.txt')
@@ -93,34 +102,41 @@ def main():
 
     human_prompt = HumanPrompt(human_personality, human_occupation, human_size)
     environment_prompt = EnvironmentPrompt(environment_mood, environment_size, environment_setting)
-    palette_generator = Palette(n_colors=3)
-    generator = PromptGenerator(human_prompt, environment_prompt, palette_generator)
+    palette_gen = Palette(n_colors=3)
+    generator = PromptGenerator(human_prompt, environment_prompt, palette_gen)
 
     while True:
-        choice = input("Human (h) or environment (e) prompt? (Press 'q' to quit!): ").strip().lower()
-        if choice in "q":
+        choice = input("Click 'h' (human) or 'e' (environment) for a prompt, and 'p' to set your palette size! (Press 'q' to quit!): ").strip().lower()
+        if choice == "q":
             break
+        if choice == "p":
+            new_size = Palette.palette_amount()
+            palette_gen = Palette(n_colors=new_size)
+            generator.palette_gen = palette_gen
+            print(f"Palette size set to {palette_gen.count}!")
+            continue
         if choice == "h":
-            print(generator.generate("human_prompt"))
-        elif choice == "e":
+                print(generator.generate("human_prompt"))
+                continue
+        if choice == "e":
             print(generator.generate("environment_prompt"))
-        else:
-            print("Sorry! Please hit 'h' (human), 'e' (environment), or 'q' (quit) to continue!")
+            continue
+        print("Sorry! Please hit 'h' (human), 'e' (environment), or 'q' (quit) to continue!")
 
     #initialized window code below
-    #pygame.init()
-    #pygame.display.set_caption("Art Idea Generator")
-    #resolution = (1000, 800)
-    #screen = pygame.display.set_mode(resolution)
-    #running = True
-    #while running:
-    #    for event in pygame.event.get():
-    #        if event.type == pygame.QUIT:
-    #            running = False
-    #    black = pygame.Color (0, 0, 0)
-    #    screen.fill(black)
-    #    pygame.display.flip()
-    #pygame.quit()
+   # pygame.init()
+   # pygame.display.set_caption("Art Idea Generator")
+   # resolution = (1000, 800)
+   # screen = pygame.display.set_mode(resolution)
+   # running = True
+   # while running:
+   #     for event in pygame.event.get():
+   #         if event.type == pygame.QUIT:
+   #             running = False
+   #     black = pygame.Color (0, 0, 0)
+   #     screen.fill(black)
+   #     pygame.display.flip()
+   # pygame.quit()
 
 if __name__ == "__main__":
     main()
