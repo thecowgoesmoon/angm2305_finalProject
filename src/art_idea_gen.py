@@ -113,6 +113,25 @@ class UILayout():
                                                                     self.loader.get("environment_setting"))
            self.running = True
 
+        def set_palette_size(self, n_colors):
+            self.palette_size = n_colors
+            self.generate_palette()
+
+        def set_prompt_human(self):
+            self.current_prompt = "human"
+
+        def set_prompt_environment(self):
+            self.current_prompt = "environment"
+
+        def generate_palette(self):
+            self.current_palette = self.palette_gen.palette_amount(self.palette_size)
+
+        def generate_prompt(self):
+            self.generate_palette()
+            if self.current_prompt == "human":
+                self.base_text = self.human_prompt.random_prompt(self.current_palette)
+            else:
+                self.base_text = self.environment_prompt.random_prompt(self.current_palette)
 
 def main():
     pygame.init()
