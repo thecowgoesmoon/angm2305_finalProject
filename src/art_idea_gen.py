@@ -1,15 +1,19 @@
 import pygame
 import random
 import os
-class Foundations:
-    adj_files = {"human_personality": ('human_personality.txt'),
+class Foundations():
+    active_button = (204, 255, 204)
+    button_color = (92, 147, 255)
+    text_color = (255, 255, 255)
+   
+adj_files = {"human_personality": ('human_personality.txt'),
                 "human_occupation": ('human_occupation.txt'), 
                 "human_height-size": ('human_height-size.txt'),
                 "environment_mood": ('environment_mood.txt'), 
                 "environment_size": ('environment_size.txt'), 
                 "environment_setting": ('environment_setting.txt')}
 
-class AdjectiveLoader:
+class AdjectiveLoader():
     def __init__(self, path): 
         self.path = path
         self.data = {key: self._load(value[0], value[1]) for key, value in path.items()}
@@ -27,7 +31,7 @@ class AdjectiveLoader:
     def get(self, key, set=None):
         return self.data.get(key, set or [])
 
-class Palette:
+class Palette():
    def __init__(self, n_colors=3):
        self.count = max(1, int(n_colors))
 
@@ -47,34 +51,34 @@ class Palette:
    def hex_to_rgb(hex):
        hex = hex.lstrip("#")
        return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
-   
-class HumanPrompt:
-    def __init__(self, human_personality, human_occupation, human_size):
-        self.human_personality = human_personality or []
-        self.human_occupation = human_occupation or []
-        self.human_size = human_size or []
+class Prompts():   
+    class HumanPrompt:
+        def __init__(self, human_personality, human_occupation, human_size):
+            self.human_personality = human_personality or []
+            self.human_occupation = human_occupation or []
+            self.human_size = human_size or []
     
-    def random_prompt(self, palette):
-        h_persona = random.choice(self.human_personality)
-        h_occupation = random.choice(self.human_occupation)
-        h_size = random.choice(self.human_size)
-        colors = ",".join(palette)
-        return f"Human: {h_size} {h_persona} {h_occupation}; Palette: {colors}\n"
+        def random_prompt(self, palette):
+            h_persona = random.choice(self.human_personality)
+            h_occupation = random.choice(self.human_occupation)
+            h_size = random.choice(self.human_size)
+            colors = ", ".join(palette)
+            return f"Character: {h_size} {h_persona} {h_occupation}\n Color Palette: {colors}\n"
     
-class EnvironmentPrompt:
-    def __init__(self, environment_mood, environment_size, environment_setting):
-        self.environment_mood = environment_mood or []
-        self.environment_size = environment_size or []
-        self.environment_setting = environment_setting or []
+    class EnvironmentPrompt:
+        def __init__(self, environment_mood, environment_size, environment_setting):
+            self.environment_mood = environment_mood or []
+            self.environment_size = environment_size or []
+            self.environment_setting = environment_setting or []
 
-    def random_prompt(self, palette):
-        e_mood = random.choice(self.environment_mood)
-        e_size = random.choice(self.environment_size) 
-        e_setting = random.choice(self.environment_setting)
-        colors = ",".join(palette)
-        return f"Environment: {e_size} {e_mood} {e_setting}; Palette: {colors}\n"
+        def random_prompt(self, palette):
+            e_mood = random.choice(self.environment_mood)
+            e_size = random.choice(self.environment_size) 
+            e_setting = random.choice(self.environment_setting)
+            colors = ", ".join(palette)
+            return f"Environment: {e_size} {e_mood} {e_setting}\n Color Palette: {colors}\n"
 
-class PromptGenerator:
+class PromptGenerator():
     def __init__(self, human_prompt, environment_prompt, palette_gen):
         self.human_prompt = human_prompt
         self.environment_prompt = environment_prompt
@@ -88,19 +92,35 @@ class PromptGenerator:
 
     def safe_load(path):
         return AdjectiveLoader(path)
+class UILayout():
+    class IdeaGenerator():
+        def __init__(self):
+           self.loader = AdjectiveLoader(adj_files)
+           self.palette_gen = Palette()
+           self.prompts = Prompts
+
+           self.palette_size = 3
+           self.current_palette = self.palette_gen.palette_amount(self.palette_size)
+           self.current_prompt = "prompt"
+           self.base_text = "Choose between a character or environment prompt!"
+
+           self.human_prompt = self.prompts.HumanPrompt(self.loader.get("human_personality"),
+                                                        self.loader.get("human_height-size"),
+                                                        self.loader.get("human_occupation"))
+           
+           self.environment_prompt = self.prompts.EnvironmentPrompt(self.loader.get("environment_mood"),
+                                                                    self.loader.get("environment_size"),
+                                                                    self.loader.get("environment_setting"))
+           self.running = True
 
 
 def main():
-    x = ["ffffff", "0a4de6"]
-    
-    for hex in x:
-           print(f"{hex} = {Palette.hex_to_rgb(hex)}")
-
     pygame.init()
     pygame.display.set_caption("Art Idea Generator")
     resolution = (1000, 800)
     screen = pygame.display.set_mode(resolution)
     clock = pygame.time.Clock()
+
     running = True
     while running:
         for event in pygame.event.get():
