@@ -5,27 +5,21 @@ import os
 class AdjectiveLoader:
     def __init__(self, path): 
         self.path = path
-        self._items = self.load()
+        self.data = {key: self._load(value[0], value[1]) for key, value in path.items()}
 
-    def load(self):
-        items = []
+    def _load(self, path, set):
         try:
-            if os.path.exists(self.path):
-                with open(self.path, encoding="utf-8") as file:
-                  items = [line.strip() for line in file if line.strip()]
-            else:
-                items = []
-        except Exception as e:
-            print(f"There was an error with {self.path}: {e}")
-            items = []
-        return items
-
-    def randomize(self):
-        if not self._items:
-            return None
-        return random.choice(self._items)
+            if not os.path.exists(path):
+                return [set]
+            with open(path, encoding="utf-8") as file:
+                items = [line.strip() for line in file if line.strip()]
+            return items or [set]
+        except Exception as error:
+            print(f"There was an error with {self.path}: {error}")
     
-       
+    def get(self, key, set=None):
+        return self.data.get(key, set or [])
+
 class Palette:
    def __init__(self, n_colors=3):
        self.count = int(n_colors)
@@ -36,11 +30,6 @@ class Palette:
    
    def generate(self):
        return [self._random_hex() for _ in range(self.count)]
-   
-   def print_palette(self):
-       palette = self.generate()
-       print(f"Color palette: {palette}")
-
 
    def palette_amount():
        sizes = {"3":3, "4":4,"5":5}
@@ -49,7 +38,7 @@ class Palette:
            if choice in sizes:
                return sizes[choice]
            print("Sorry! Please choose a number between 3 and 5!")
-      
+                         
 class HumanPrompt:
     def __init__(self, human_personality, human_occupation, human_size):
         self.human_personality = human_personality or []
@@ -89,54 +78,24 @@ class PromptGenerator:
         return self.environment_prompt.random_prompt(palette)
 
     def safe_load(path):
-        return AdjectiveLoader(path)._items
+        return AdjectiveLoader(path)
 
 
 def main():
-    human_personality = PromptGenerator.safe_load('human_personality.txt')
-    human_occupation = PromptGenerator.safe_load('human_occupation.txt')
-    human_size = PromptGenerator.safe_load('human_height-size.txt')
-    environment_mood = PromptGenerator.safe_load('environment_mood.txt')
-    environment_size = PromptGenerator.safe_load('environment_size.txt')
-    environment_setting = PromptGenerator.safe_load('environment_setting.txt')
-
-    human_prompt = HumanPrompt(human_personality, human_occupation, human_size)
-    environment_prompt = EnvironmentPrompt(environment_mood, environment_size, environment_setting)
-    palette_gen = Palette(n_colors=3)
-    generator = PromptGenerator(human_prompt, environment_prompt, palette_gen)
-
-    while True:
-        choice = input("Click 'h' (human) or 'e' (environment) for a prompt, and 'p' to set your palette size! (Press 'q' to quit!): ").strip().lower()
-        if choice == "q":
-            break
-        if choice == "p":
-            new_size = Palette.palette_amount()
-            palette_gen = Palette(n_colors=new_size)
-            generator.palette_gen = palette_gen
-            print(f"Palette size set to {palette_gen.count}!")
-            continue
-        if choice == "h":
-                print(generator.generate("human_prompt"))
-                continue
-        if choice == "e":
-            print(generator.generate("environment_prompt"))
-            continue
-        print("Sorry! Please hit 'h' (human), 'e' (environment), or 'q' (quit) to continue!")
-
-    #initialized window code below
-   # pygame.init()
-   # pygame.display.set_caption("Art Idea Generator")
-   # resolution = (1000, 800)
-   # screen = pygame.display.set_mode(resolution)
-   # running = True
-   # while running:
-   #     for event in pygame.event.get():
-   #         if event.type == pygame.QUIT:
-   #             running = False
-   #     black = pygame.Color (0, 0, 0)
-   #     screen.fill(black)
-   #     pygame.display.flip()
-   # pygame.quit()
+    pygame.init()
+    pygame.display.set_caption("Art Idea Generator")
+    resolution = (1000, 800)
+    screen = pygame.display.set_mode(resolution)
+    clock = pygame.time.Clock()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        black = pygame.Color (0, 0, 0)
+        screen.fill(black)
+        pygame.display.flip()
+    pygame.quit()
 
 if __name__ == "__main__":
     main()
