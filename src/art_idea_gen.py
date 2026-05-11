@@ -159,8 +159,30 @@ class UILayout():
                 self.base_text = self.human_prompt.random_prompt(self.current_palette)
             else:
                 self.base_text = self.environment_prompt.random_prompt(self.current_palette)
-        
 
+        def _create_buttons(self):
+            font = self.font
+            self.but_3 = UILayout.Button((20, 20, 80, 36), "3 Colors", lambda:
+                                         self.set_palette_size(3), font=font)
+            self.but_4 = UILayout.Button((110, 20, 80, 36), "4 Colors", lambda:
+                                         self.set_palette_size(4), font=font)
+            self.but_5 = UILayout.Button((200, 20, 80, 36), "5 Colors", lambda: 
+                                         self.set_palette_size(5), font=font)
+            self.but_human = UILayout.Button((320, 20, 100, 36), "Human", self.set_prompt_human,
+                                             font=font)
+            self.but_environment = UILayout.Button((430, 20, 100, 36), "Environment", 
+                                                   self.set_prompt_environment, font=font)
+            self.but_pal_gen = UILayout.Button((550, 20, 100, 36), "Generate Palette?", self.generate_palette, font=font)
+            self.but_prompt_gen = UILayout.Button((660, 20, 120, 36), "Generate Prompt?", self.generate_prompt, font=font)
+            self.buttons.extends([self.but_3, self.but_4, self.but_5,
+                                  self.but_human, self.but_environment,
+                                  self.but_pal_gen, self.but_prompt_gen])
+        def update_button_states(self):
+            self.but_3.active = (self.palette_size == 3)
+            self.but_4.active = (self.palette_size == 4)
+            self.but_5.active = (self.palette_size == 5)
+            self.but_human.active = (self.current_prompt == "human")
+            self.but_environment.active = (self.current_prompt == "environment")
 
 def main():
     pygame.init()
