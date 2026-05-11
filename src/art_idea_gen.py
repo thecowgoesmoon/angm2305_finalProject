@@ -93,6 +93,33 @@ class PromptGenerator():
     def safe_load(path):
         return AdjectiveLoader(path)
 class UILayout():
+    class Button:
+        def __init__(self, rect, text, callback=None, font=None):
+            self.rect = pygame.Rect(rect)
+            self.text = text
+            self.callback = callback
+            self.active = False
+            self.font = font
+
+        def draw(self, surf):
+            active_button = Foundations.active_button
+            button_color = Foundations.button_color
+            text_color = Foundations.text_color
+
+            color = active_button if self.active else button_color
+            pygame.draw.rect(surf, color, self.rect, border_radius=6)
+            text = self.font.render(self.text, True, text_color)
+            text_shape = text.get_rect(center=self.rect.center)
+            surf.blit(text, text_shape)
+
+        def mouse(self, event):
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if self.rect.collidepoint(event.pos):
+                        if self.callback:
+                            self.callback()
+                        return True
+                    return False
+                
     class IdeaGenerator():
         def __init__(self):
            self.loader = AdjectiveLoader(adj_files)
@@ -132,6 +159,8 @@ class UILayout():
                 self.base_text = self.human_prompt.random_prompt(self.current_palette)
             else:
                 self.base_text = self.environment_prompt.random_prompt(self.current_palette)
+        
+
 
 def main():
     pygame.init()
