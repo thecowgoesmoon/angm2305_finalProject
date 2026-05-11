@@ -1,0 +1,15 @@
+firefighter
+chef
+optimist
+pessimist
+police 
+teacher
+priest
+student
+creep
+weirdo
+woman
+man
+person
+guy
+girl

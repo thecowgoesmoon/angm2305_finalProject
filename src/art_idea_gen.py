@@ -1,6 +1,13 @@
 import pygame
 import random
 import os
+class Foundations:
+    adj_files = {"human_personality": ('human_personality.txt'),
+                "human_occupation": ('human_occupation.txt'), 
+                "human_height-size": ('human_height-size.txt'),
+                "environment_mood": ('environment_mood.txt'), 
+                "environment_size": ('environment_size.txt'), 
+                "environment_setting": ('environment_setting.txt')}
 
 class AdjectiveLoader:
     def __init__(self, path): 

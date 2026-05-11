@@ -1,0 +1,5 @@
+swamp
+lake
+school
+dormitory
+apartment
