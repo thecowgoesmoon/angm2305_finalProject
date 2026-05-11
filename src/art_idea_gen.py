@@ -8,11 +8,17 @@ class AdjectiveLoader:
         self._items = self.load()
 
     def load(self):
+        items = []
         try:
-            with open(self.path, encoding="utf-8") as file:
-                  self._items = [line.strip() for line in file if line.strip()]
+            if os.path.exists(self.path):
+                with open(self.path, encoding="utf-8") as file:
+                  items = [line.strip() for line in file if line.strip()]
+            else:
+                items = []
         except Exception as e:
-            print(f"error w/ {self.path}: {e}")
+            print(f"There was an error with {self.path}: {e}")
+            items = []
+        return items
 
     def randomize(self):
         if not self._items:
@@ -42,11 +48,11 @@ class HumanPrompt:
         self.human_size = human_size or []
     
     def random_prompt(self, palette):
-        p = random.choice(self.human_personality) if self.human_personality else "blank" 
-        o = random.choice(self.human_occupation) if self.human_occupation else "blank"
-        hs = random.choice(self.human_size) if self.human_size else "blank"
+        h_persona = random.choice(self.human_personality)
+        h_occupation = random.choice(self.human_occupation)
+        h_size = random.choice(self.human_size)
         colors = ",".join(palette)
-        return f"Human: {hs} {p} {o}; Palette: {colors}"
+        return f"Human: {h_size} {h_persona} {h_occupation}; Palette: {colors}"
     
 class EnvironmentPrompt:
     def __init__(self, environment_mood, environment_size, environment_setting):
@@ -55,11 +61,11 @@ class EnvironmentPrompt:
         self.environment_setting = environment_setting or []
 
     def random_prompt(self, palette):
-        m = random.choice(self.environment_mood) if self.environment_mood else "blank"
-        es = random.choice(self.environment_size) if self.environment_size else "blank"
-        s = random.choice(self.environment_setting) if self.environment_setting else "blank"
+        e_mood = random.choice(self.environment_mood)
+        e_size = random.choice(self.environment_size) 
+        e_setting = random.choice(self.environment_setting)
         colors = ",".join(palette)
-        return f"Environment: {es} {m} {s}; Palette: {colors}"
+        return f"Environment: {e_size} {e_mood} {e_setting}; Palette: {colors}"
 
 class PromptGenerator:
     def __init__(self, human_prompt, environment_prompt, palette_gen):
@@ -90,12 +96,13 @@ def main():
     palette_test = Palette(n_colors=3)
     generator = PromptGenerator(human_prompt, environment_prompt, palette_test)
 
-    human_result = generator.generate("human")
-    env_result = generator.generate("env")
+    human_result = generator.generate("h")
+    environment_result = generator.generate("e")
     print("Generated prompts:")
     print(human_result)
-    print(env_result)
+    print(environment_result)
 
+   
     for i in range(1):
         palette = palette_test.print_palette()
         return palette
