@@ -29,14 +29,13 @@ class AdjectiveLoader:
 
 class Palette:
    def __init__(self, n_colors=3):
-       self.count = int(n_colors)
+       self.count = max(1, int(n_colors))
 
-   def _random_hex(self):
-       return "#{:02x}{:02x}{:02x}".format(random.randint(0,255), random.randint(0,255)
-                                           , random.randint(0,255))
+   def random_hex(self):
+       return "#{:02x}{:02x}{:02x}".format(random.randint(0,255), random.randint(0,255), random.randint(0,255))
    
    def generate(self):
-       return [self._random_hex() for _ in range(self.count)]
+       return [self.random_hex() for _ in range(self.count)]
 
    def palette_amount():
        sizes = {"3":3, "4":4,"5":5}
@@ -45,7 +44,10 @@ class Palette:
            if choice in sizes:
                return sizes[choice]
            print("Sorry! Please choose a number between 3 and 5!")
-                         
+   def hex_to_rgb(hex):
+       hex = hex.lstrip("#")
+       return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
+   
 class HumanPrompt:
     def __init__(self, human_personality, human_occupation, human_size):
         self.human_personality = human_personality or []
@@ -89,6 +91,11 @@ class PromptGenerator:
 
 
 def main():
+    x = ["ffffff", "0a4de6"]
+    
+    for hex in x:
+           print(f"{hex} = {Palette.hex_to_rgb(hex)}")
+
     pygame.init()
     pygame.display.set_caption("Art Idea Generator")
     resolution = (1000, 800)
