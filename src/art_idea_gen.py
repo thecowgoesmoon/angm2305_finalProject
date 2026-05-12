@@ -2,7 +2,6 @@ import pygame
 import random
 import os
 
-
 class Foundations():
     active_button = (0, 102, 204)
     button_color = (92, 147, 255)
@@ -46,25 +45,18 @@ class Palette():
    
    def palette_colors(self, n_colors):
        return [self.random_hex() for _ in range(max(1, int(n_colors)))]
-
-   def palette_amount():
-       sizes = {"3":3, "4":4,"5":5}
-       while True:
-           choice = input("Choose a palette size between 3 and 5!: ").strip()
-           if choice in sizes:
-               return sizes[choice]
-           print("Sorry! Please choose a number between 3 and 5!")
    
    @staticmethod
    def hex_to_rgb(hex):
        hex = hex.lstrip("#")
        return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
+   
 class Prompts():   
     class HumanPrompt:
         def __init__(self, human_personality, human_occupation, human_size):
-            self.human_personality = human_personality or []
-            self.human_occupation = human_occupation or []
-            self.human_size = human_size or []
+            self.human_personality = human_personality 
+            self.human_occupation = human_occupation 
+            self.human_size = human_size
     
         def random_prompt(self, palette):
             h_persona = random.choice(self.human_personality)
@@ -75,9 +67,9 @@ class Prompts():
     
     class EnvironmentPrompt:
         def __init__(self, environment_mood, environment_size, environment_setting):
-            self.environment_mood = environment_mood or []
-            self.environment_size = environment_size or []
-            self.environment_setting = environment_setting or []
+            self.environment_mood = environment_mood
+            self.environment_size = environment_size 
+            self.environment_setting = environment_setting 
 
         def random_prompt(self, palette):
             e_mood = random.choice(self.environment_mood)
@@ -85,21 +77,7 @@ class Prompts():
             e_setting = random.choice(self.environment_setting)
             colors = ", ".join(palette)
             return f"Environment: {e_size} {e_mood} {e_setting}; Color Palette: {colors}"
-
-class PromptGenerator():
-    def __init__(self, human_prompt, environment_prompt, palette_gen):
-        self.human_prompt = human_prompt
-        self.environment_prompt = environment_prompt
-        self.palette_gen = palette_gen
-
-    def generate(self, prompt):
-        palette = self.palette_gen.generate()
-        if prompt.lower().startswith("h"):
-            return self.human_prompt.random_prompt(palette)
-        return self.environment_prompt.random_prompt(palette)
-
-    def safe_load(path):
-        return AdjectiveLoader(path)
+        
 class UILayout():
     class Button:
         def __init__(self, rect, text, callback=None, font=None):
