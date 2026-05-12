@@ -13,7 +13,7 @@ class Foundations():
     background = (0, 0, 0)
     font_type = None
    
-adj_files = {"human_personality": ('human_personality.txt'),
+    adj_files = {"human_personality": ('human_personality.txt'),
                 "human_occupation": ('human_occupation.txt'), 
                 "human_height-size": ('human_height-size.txt'),
                 "environment_mood": ('environment_mood.txt'), 
@@ -39,14 +39,13 @@ class AdjectiveLoader():
         return self.data.get(key, set or [])
 
 class Palette():
-   def __init__(self, n_colors=3):
-       self.count = max(1, int(n_colors))
-
    def random_hex(self):
-       return "#{:02x}{:02x}{:02x}".format(random.randint(0,255), random.randint(0,255), random.randint(0,255))
+       return "#{:02x}{:02x}{:02x}".format(random.randint(0,255), 
+                                           random.randint(0,255), 
+                                           random.randint(0,255))
    
-   def generate(self):
-       return [self.random_hex() for _ in range(self.count)]
+   def palette_colors(self, n_colors):
+       return [self.random_hex() for _ in range(max(1, int(n_colors)))]
 
    def palette_amount():
        sizes = {"3":3, "4":4,"5":5}
@@ -55,6 +54,8 @@ class Palette():
            if choice in sizes:
                return sizes[choice]
            print("Sorry! Please choose a number between 3 and 5!")
+   
+   @staticmethod
    def hex_to_rgb(hex):
        hex = hex.lstrip("#")
        return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
@@ -135,12 +136,12 @@ class UILayout():
            self.clock = pygame.time.Clock()
            self.font = pygame.font.Font(None, 18) 
 
-           self.loader = AdjectiveLoader(adj_files)
+           self.loader = AdjectiveLoader(Foundations.adj_files)
            self.palette_gen = Palette()
            self.prompts = Prompts
 
            self.palette_size = 3
-           self.current_palette = self.palette_gen.palette_amount
+           self.current_palette = self.palette_gen.palette_colors(self.palette_size)
            self.current_prompt = "prompt"
            self.base_text = "Choose between a character or environment prompt!"
 
@@ -167,7 +168,7 @@ class UILayout():
             self.current_prompt = "environment"
 
         def generate_palette(self):
-            self.current_palette = self.palette_gen.palette_amount(self.palette_size)
+            self.current_palette = self.palette_gen.palette_colors(self.palette_size)
 
         def generate_prompt(self):
             self.generate_palette()
@@ -201,6 +202,49 @@ class UILayout():
             self.but_human.active = (self.current_prompt == "human")
             self.but_environment.active = (self.current_prompt == "environment")
 
+        def draw_text_block(self, text, rect, font, color, leading=6):
+            words = text.split()
+            lines = []
+            str = ""
+            for w in words:
+                test = (str + "" + w).strip()
+                if font.size(test)[0] > rect.width:
+                    lines.append(str)
+                    str = w
+                else:
+                    str = test
+            if str:
+                lines.append(str)
+
+            x = rect.x
+            y = rect.y
+            for line in lines:
+                surf = font.render(line, self, color)
+                self.screen.blit(surf, (x, y))
+                y += font.get_height() + leading
+
+        def draw_palette(self, palette, rect):
+            n = len(palette)
+            if n == 0:
+                return
+            box_w = min((rect.width - (n-1)*10) // n, 120)
+            box_h = 80
+            x = rect.x
+            y = rect.y
+            for i, height in enumerate(palette):
+                rgb = self.palette_gen.hex_to_rgb(height)
+                box_rect = pygame.Rect(x + i*(box_w + 10), y, box_w, box_h)
+                pygame.draw.rect(self.screen, rgb, box_rect, border_radius=6)
+                label = self.font.render(height, True, Foundations.text_color)
+                label_rect = label.get_rect(center=(box_rect.centerx, box_rect.bottom + 16))
+                self.screen.blit(label, label_rect)
+
+                preview_y = y + box_h + 40
+                for i, height in enumerate(palette):
+                    rgb = self.palette_gen.hex_to_rgb(height)
+                    p_rect = pygame.Rect(rect.x + i*30, preview_y, 24, 24)
+                    pygame.draw.rect(self.screen, rgb, p_rect, border_radius=4)
+
         def draw(self):
             self.screen.fill(Foundations.background)
             pygame.draw.rect(self.screen, Foundations.panel_color,(10, 10, 1000-20, 68), border_radius=8)
@@ -209,9 +253,11 @@ class UILayout():
             
             area_rect = pygame.Rect(10, 90, 1000-20, 150)
             pygame.draw.rect(self.screen, Foundations.panel_color, area_rect, border_radius=8)
+            self.draw_text_block(self.base_text, area_rect.inflate(-12, -12), self.font, Foundations.text_color, leading=8)
             
             palette_rect = pygame.Rect(10, 260, 1000-20, 200)
             pygame.draw.rect(self.screen, Foundations.panel_color, palette_rect, border_radius=8)
+            self.draw_palette(self.current_palette, palette_rect.inflate(-12, -12))
 
             pygame.display.flip()
             
@@ -228,7 +274,7 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     idea_gen.running = False
                 if event.key == pygame.K_SPACE:
-                    idea_gen.IdeaGenerator.generate_prompt()
+                    idea_gen.generate_prompt()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for b in idea_gen.buttons:
                     if b.mouse(event):
