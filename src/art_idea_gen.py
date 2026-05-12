@@ -4,7 +4,7 @@ import os
 
 
 class Foundations():
-    active_button = (204, 255, 204)
+    active_button = (0, 102, 204)
     button_color = (92, 147, 255)
     text_color = (255, 255, 255)
     panel_color = (40, 40, 40)
@@ -255,7 +255,7 @@ class UILayout():
             
             area_rect = pygame.Rect(10, 90, 1000-20, 150)
             pygame.draw.rect(self.screen, Foundations.panel_color, area_rect, border_radius=8)
-            self.draw_text_block(self.base_text, area_rect.inflate(-12, -12), self.font, Foundations.text_color, leading=8)
+            self.draw_text_block(self.base_text, area_rect.inflate(-24, -12), self.font, Foundations.text_color, leading=8)
             
             palette_rect = pygame.Rect(10, 260, 1000-20, 200)
             pygame.draw.rect(self.screen, Foundations.panel_color, palette_rect, border_radius=8)
