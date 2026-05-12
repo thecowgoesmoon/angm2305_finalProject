@@ -218,6 +218,7 @@ class UILayout():
 
 def main():
     idea_gen = UILayout.IdeaGenerator()
+    clock = idea_gen.clock
 
     while idea_gen.running:
         for event in pygame.event.get():
@@ -230,12 +231,13 @@ def main():
                     idea_gen.IdeaGenerator.generate_prompt()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for b in idea_gen.buttons:
-                    if b.handle_event(event):
+                    if b.mouse(event):
                         idea_gen.update_button_states()
                         break
                                 
         idea_gen.update_button_states()
         idea_gen.draw()
+        clock.tick(30)
 
     pygame.quit()
 
