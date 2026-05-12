@@ -1,10 +1,17 @@
 import pygame
 import random
 import os
+
+
 class Foundations():
     active_button = (204, 255, 204)
     button_color = (92, 147, 255)
     text_color = (255, 255, 255)
+    panel_color = (40, 40, 40)
+    resolution = (1000, 800)
+    screen = pygame.display.set_mode(resolution)
+    background = (0, 0, 0)
+    font_type = None
    
 adj_files = {"human_personality": ('human_personality.txt'),
                 "human_occupation": ('human_occupation.txt'), 
@@ -122,12 +129,18 @@ class UILayout():
                 
     class IdeaGenerator():
         def __init__(self):
+           pygame.init()
+           pygame.display.set_caption("Art Idea Generator")
+           self.screen = pygame.display.set_mode(Foundations.resolution)
+           self.clock = pygame.time.Clock()
+           self.font = pygame.font.Font(None, 18) 
+
            self.loader = AdjectiveLoader(adj_files)
            self.palette_gen = Palette()
            self.prompts = Prompts
 
            self.palette_size = 3
-           self.current_palette = self.palette_gen.palette_amount(self.palette_size)
+           self.current_palette = self.palette_gen.palette_amount
            self.current_prompt = "prompt"
            self.base_text = "Choose between a character or environment prompt!"
 
@@ -138,6 +151,9 @@ class UILayout():
            self.environment_prompt = self.prompts.EnvironmentPrompt(self.loader.get("environment_mood"),
                                                                     self.loader.get("environment_size"),
                                                                     self.loader.get("environment_setting"))
+           
+           self.buttons = []
+           self._create_buttons()
            self.running = True
 
         def set_palette_size(self, n_colors):
@@ -174,9 +190,10 @@ class UILayout():
                                                    self.set_prompt_environment, font=font)
             self.but_pal_gen = UILayout.Button((550, 20, 100, 36), "Generate Palette?", self.generate_palette, font=font)
             self.but_prompt_gen = UILayout.Button((660, 20, 120, 36), "Generate Prompt?", self.generate_prompt, font=font)
-            self.buttons.extends([self.but_3, self.but_4, self.but_5,
+            self.buttons.extend([self.but_3, self.but_4, self.but_5,
                                   self.but_human, self.but_environment,
                                   self.but_pal_gen, self.but_prompt_gen])
+            
         def update_button_states(self):
             self.but_3.active = (self.palette_size == 3)
             self.but_4.active = (self.palette_size == 4)
@@ -184,21 +201,42 @@ class UILayout():
             self.but_human.active = (self.current_prompt == "human")
             self.but_environment.active = (self.current_prompt == "environment")
 
-def main():
-    pygame.init()
-    pygame.display.set_caption("Art Idea Generator")
-    resolution = (1000, 800)
-    screen = pygame.display.set_mode(resolution)
-    clock = pygame.time.Clock()
+        def draw(self):
+            self.screen.fill(Foundations.background)
+            pygame.draw.rect(self.screen, Foundations.panel_color,(10, 10, 1000-20, 68), border_radius=8)
+            for b in self.buttons:
+                b.draw(self.screen)
+            
+            area_rect = pygame.Rect(10, 90, 1000-20, 150)
+            pygame.draw.rect(self.screen, Foundations.panel_color, area_rect, border_radius=8)
+            
+            palette_rect = pygame.Rect(10, 260, 1000-20, 200)
+            pygame.draw.rect(self.screen, Foundations.panel_color, palette_rect, border_radius=8)
 
-    running = True
-    while running:
+            pygame.display.flip()
+            
+
+def main():
+    idea_gen = UILayout.IdeaGenerator()
+
+    while idea_gen.running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-        black = pygame.Color (0, 0, 0)
-        screen.fill(black)
-        pygame.display.flip()
+                idea_gen.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    idea_gen.running = False
+                if event.key == pygame.K_SPACE:
+                    idea_gen.IdeaGenerator.generate_prompt()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for b in idea_gen.buttons:
+                    if b.handle_event(event):
+                        idea_gen.update_button_states()
+                        break
+                                
+        idea_gen.update_button_states()
+        idea_gen.draw()
+
     pygame.quit()
 
 if __name__ == "__main__":
