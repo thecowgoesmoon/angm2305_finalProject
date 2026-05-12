@@ -8,17 +8,17 @@ class Foundations():
     button_color = (92, 147, 255)
     text_color = (255, 255, 255)
     panel_color = (40, 40, 40)
-    resolution = (1000, 800)
+    resolution = (1000, 500)
     screen = pygame.display.set_mode(resolution)
     background = (0, 0, 0)
     font_type = None
    
-    adj_files = {"human_personality": ('human_personality.txt'),
-                "human_occupation": ('human_occupation.txt'), 
-                "human_height-size": ('human_height-size.txt'),
-                "environment_mood": ('environment_mood.txt'), 
-                "environment_size": ('environment_size.txt'), 
-                "environment_setting": ('environment_setting.txt')}
+    adj_files = {"human_personality": ("human_personality.txt", []),
+                "human_occupation": ("human_occupation.txt", []), 
+                "human_height-size": ("human_height-size.txt", []),
+                "environment_mood": ("environment_mood.txt", []), 
+                "environment_size": ("environment_size.txt", []), 
+                "environment_setting": ("environment_setting.txt", [])}
 
 class AdjectiveLoader():
     def __init__(self, path): 
@@ -71,7 +71,7 @@ class Prompts():
             h_occupation = random.choice(self.human_occupation)
             h_size = random.choice(self.human_size)
             colors = ", ".join(palette)
-            return f"Character: {h_size} {h_persona} {h_occupation}\n Color Palette: {colors}\n"
+            return (f"Character: {h_occupation} {h_persona} {h_size}; Color Palette: {colors}")
     
     class EnvironmentPrompt:
         def __init__(self, environment_mood, environment_size, environment_setting):
@@ -84,7 +84,7 @@ class Prompts():
             e_size = random.choice(self.environment_size) 
             e_setting = random.choice(self.environment_setting)
             colors = ", ".join(palette)
-            return f"Environment: {e_size} {e_mood} {e_setting}\n Color Palette: {colors}\n"
+            return f"Environment: {e_size} {e_mood} {e_setting}; Color Palette: {colors}"
 
 class PromptGenerator():
     def __init__(self, human_prompt, environment_prompt, palette_gen):
@@ -147,11 +147,11 @@ class UILayout():
 
            self.human_prompt = self.prompts.HumanPrompt(self.loader.get("human_personality"),
                                                         self.loader.get("human_height-size"),
-                                                        self.loader.get("human_occupation"))
+                                                        self.loader.get("human_occupation"),)
            
            self.environment_prompt = self.prompts.EnvironmentPrompt(self.loader.get("environment_mood"),
                                                                     self.loader.get("environment_size"),
-                                                                    self.loader.get("environment_setting"))
+                                                                    self.loader.get("environment_setting"),)
            
            self.buttons = []
            self._create_buttons()
@@ -171,7 +171,7 @@ class UILayout():
             self.current_palette = self.palette_gen.palette_colors(self.palette_size)
 
         def generate_prompt(self):
-            self.generate_palette()
+            self.current_palette = self.palette_gen.palette_colors(self.palette_size)
             if self.current_prompt == "human":
                 self.base_text = self.human_prompt.random_prompt(self.current_palette)
             else:
@@ -189,7 +189,7 @@ class UILayout():
                                              font=font)
             self.but_environment = UILayout.Button((430, 20, 100, 36), "Environment", 
                                                    self.set_prompt_environment, font=font)
-            self.but_pal_gen = UILayout.Button((550, 20, 100, 36), "Generate Palette?", self.generate_palette, font=font)
+            self.but_pal_gen = UILayout.Button((550, 20, 100, 36), "Generate \nPalette?", self.generate_palette, font=font)
             self.but_prompt_gen = UILayout.Button((660, 20, 120, 36), "Generate Prompt?", self.generate_prompt, font=font)
             self.buttons.extend([self.but_3, self.but_4, self.but_5,
                                   self.but_human, self.but_environment,
@@ -203,23 +203,25 @@ class UILayout():
             self.but_environment.active = (self.current_prompt == "environment")
 
         def draw_text_block(self, text, rect, font, color, leading=6):
-            words = text.split()
-            lines = []
-            str = ""
-            for w in words:
-                test = (str + "" + w).strip()
-                if font.size(test)[0] > rect.width:
-                    lines.append(str)
-                    str = w
-                else:
-                    str = test
-            if str:
-                lines.append(str)
-
+            paragraphs = text.split()
             x = rect.x
             y = rect.y
+            lines = []
+            str = ""
+            for p in paragraphs:
+                words = p.split()
+                for w in words:
+                    test = (str + " " + p).strip()
+                    if font.size(test)[0] > rect.width:
+                        lines.append(str)
+                        str = p
+                    else:
+                        str = test
+            if str:
+                lines.append(str)
+                
             for line in lines:
-                surf = font.render(line, self, color)
+                surf = font.render(line, True, color)
                 self.screen.blit(surf, (x, y))
                 y += font.get_height() + leading
 
