@@ -1,0 +1,271 @@
+import pygame
+import random
+import os
+
+class Foundations():
+    active_button = (0, 102, 204)
+    button_color = (92, 147, 255)
+    text_color = (255, 255, 255)
+    panel_color = (40, 40, 40)
+    resolution = (1000, 500)
+    screen = pygame.display.set_mode(resolution)
+    background = (0, 0, 0)
+    font_type = None
+   
+    adj_files = {"human_personality": ("human_personality.txt", []),
+                "human_occupation": ("human_occupation.txt", []), 
+                "human_height-size": ("human_height-size.txt", []),
+                "environment_mood": ("environment_mood.txt", []), 
+                "environment_size": ("environment_size.txt", []), 
+                "environment_setting": ("environment_setting.txt", [])}
+
+class AdjectiveLoader():
+    def __init__(self, path): 
+        self.path = path
+        self.data = {key: self._load(value[0], value[1]) for key, value in path.items()}
+
+    def _load(self, path, set):
+        try:
+            if not os.path.exists(path):
+                return [set]
+            with open(path, encoding="utf-8") as file:
+                items = [line.strip() for line in file if line.strip()]
+            return items or [set]
+        except Exception as error:
+            print(f"There was an error with {self.path}: {error}")
+    
+    def get(self, key, set=None):
+        return self.data.get(key, set or [])
+
+class Palette():
+   def random_hex(self):
+       return "#{:02x}{:02x}{:02x}".format(random.randint(0,255), 
+                                           random.randint(0,255), 
+                                           random.randint(0,255))
+   
+   def palette_colors(self, n_colors):
+       return [self.random_hex() for _ in range(max(1, int(n_colors)))]
+   
+   @staticmethod
+   def hex_to_rgb(hex):
+       hex = hex.lstrip("#")
+       return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
+   
+class Prompts():   
+    class HumanPrompt:
+        def __init__(self, human_personality, human_occupation, human_size):
+            self.human_personality = human_personality 
+            self.human_occupation = human_occupation 
+            self.human_size = human_size
+    
+        def random_prompt(self, palette):
+            h_persona = random.choice(self.human_personality)
+            h_occupation = random.choice(self.human_occupation)
+            h_size = random.choice(self.human_size)
+            colors = ", ".join(palette)
+            return (f"Character: {h_occupation} {h_persona} {h_size}; Color Palette: {colors}")
+    
+    class EnvironmentPrompt:
+        def __init__(self, environment_mood, environment_size, environment_setting):
+            self.environment_mood = environment_mood
+            self.environment_size = environment_size 
+            self.environment_setting = environment_setting 
+
+        def random_prompt(self, palette):
+            e_mood = random.choice(self.environment_mood)
+            e_size = random.choice(self.environment_size) 
+            e_setting = random.choice(self.environment_setting)
+            colors = ", ".join(palette)
+            return f"Environment: {e_size} {e_mood} {e_setting}; Color Palette: {colors}"
+        
+class UILayout():
+    class Button:
+        def __init__(self, rect, text, callback=None, font=None):
+            self.rect = pygame.Rect(rect)
+            self.text = text
+            self.callback = callback
+            self.active = False
+            self.font = font
+
+        def draw(self, surf):
+            active_button = Foundations.active_button
+            button_color = Foundations.button_color
+            text_color = Foundations.text_color
+
+            color = active_button if self.active else button_color
+            pygame.draw.rect(surf, color, self.rect, border_radius=6)
+            text = self.font.render(self.text, True, text_color)
+            text_shape = text.get_rect(center=self.rect.center)
+            surf.blit(text, text_shape)
+
+        def mouse(self, event):
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if self.rect.collidepoint(event.pos):
+                        if self.callback:
+                            self.callback()
+                        return True
+                    return False
+                
+    class IdeaGenerator():
+        def __init__(self):
+           pygame.init()
+           pygame.display.set_caption("Art Idea Generator")
+           self.screen = pygame.display.set_mode(Foundations.resolution)
+           self.clock = pygame.time.Clock()
+           self.font = pygame.font.Font(None, 18) 
+
+           self.loader = AdjectiveLoader(Foundations.adj_files)
+           self.palette_gen = Palette()
+           self.prompts = Prompts
+
+           self.palette_size = 3
+           self.current_palette = self.palette_gen.palette_colors(self.palette_size)
+           self.current_prompt = "prompt"
+           self.base_text = "Choose between a character or environment prompt!"
+
+           self.human_prompt = self.prompts.HumanPrompt(self.loader.get("human_personality"),
+                                                        self.loader.get("human_height-size"),
+                                                        self.loader.get("human_occupation"),)
+           
+           self.environment_prompt = self.prompts.EnvironmentPrompt(self.loader.get("environment_mood"),
+                                                                    self.loader.get("environment_size"),
+                                                                    self.loader.get("environment_setting"),)
+           
+           self.buttons = []
+           self._create_buttons()
+           self.running = True
+
+        def set_palette_size(self, n_colors):
+            self.palette_size = n_colors
+            self.generate_palette()
+
+        def set_prompt_human(self):
+            self.current_prompt = "human"
+
+        def set_prompt_environment(self):
+            self.current_prompt = "environment"
+
+        def generate_palette(self):
+            self.current_palette = self.palette_gen.palette_colors(self.palette_size)
+
+        def generate_prompt(self):
+            self.current_palette = self.palette_gen.palette_colors(self.palette_size)
+            if self.current_prompt == "human":
+                self.base_text = self.human_prompt.random_prompt(self.current_palette)
+            else:
+                self.base_text = self.environment_prompt.random_prompt(self.current_palette)
+
+        def _create_buttons(self):
+            font = self.font
+            self.but_3 = UILayout.Button((20, 20, 80, 36), "3 Colors", lambda:
+                                         self.set_palette_size(3), font=font)
+            self.but_4 = UILayout.Button((110, 20, 80, 36), "4 Colors", lambda:
+                                         self.set_palette_size(4), font=font)
+            self.but_5 = UILayout.Button((200, 20, 80, 36), "5 Colors", lambda: 
+                                         self.set_palette_size(5), font=font)
+            self.but_human = UILayout.Button((320, 20, 100, 36), "Character", self.set_prompt_human,
+                                             font=font)
+            self.but_environment = UILayout.Button((430, 20, 100, 36), "Environment", 
+                                                   self.set_prompt_environment, font=font)
+            self.but_pal_gen = UILayout.Button((550, 20, 100, 36), "Generate \nPalette?", self.generate_palette, font=font)
+            self.but_prompt_gen = UILayout.Button((660, 20, 120, 36), "Generate Prompt?", self.generate_prompt, font=font)
+            self.buttons.extend([self.but_3, self.but_4, self.but_5,
+                                  self.but_human, self.but_environment,
+                                  self.but_pal_gen, self.but_prompt_gen])
+            
+        def update_button_states(self):
+            self.but_3.active = (self.palette_size == 3)
+            self.but_4.active = (self.palette_size == 4)
+            self.but_5.active = (self.palette_size == 5)
+            self.but_human.active = (self.current_prompt == "human")
+            self.but_environment.active = (self.current_prompt == "environment")
+
+        def draw_text_block(self, text, rect, font, color, leading=6):
+            paragraphs = text.split()
+            x = rect.x
+            y = rect.y
+            lines = []
+            str = ""
+            for p in paragraphs:
+                words = p.split()
+                for w in words:
+                    test = (str + " " + p).strip()
+                    if font.size(test)[0] > rect.width:
+                        lines.append(str)
+                        str = p
+                    else:
+                        str = test
+            if str:
+                lines.append(str)
+                
+            for line in lines:
+                surf = font.render(line, True, color)
+                self.screen.blit(surf, (x, y))
+                y += font.get_height() + leading
+
+        def draw_palette(self, palette, rect):
+            n = len(palette)
+            if n == 0:
+                return
+            box_w = min((rect.width - (n-1)*10) // n, 120)
+            box_h = 80
+            x = rect.x
+            y = rect.y
+            for i, height in enumerate(palette):
+                rgb = self.palette_gen.hex_to_rgb(height)
+                box_rect = pygame.Rect(x + i*(box_w + 10), y, box_w, box_h)
+                pygame.draw.rect(self.screen, rgb, box_rect, border_radius=6)
+                label = self.font.render(height, True, Foundations.text_color)
+                label_rect = label.get_rect(center=(box_rect.centerx, box_rect.bottom + 16))
+                self.screen.blit(label, label_rect)
+
+                preview_y = y + box_h + 40
+                for i, height in enumerate(palette):
+                    rgb = self.palette_gen.hex_to_rgb(height)
+                    p_rect = pygame.Rect(rect.x + i*30, preview_y, 24, 24)
+                    pygame.draw.rect(self.screen, rgb, p_rect, border_radius=4)
+
+        def draw(self):
+            self.screen.fill(Foundations.background)
+            pygame.draw.rect(self.screen, Foundations.panel_color,(10, 10, 1000-20, 68), border_radius=8)
+            for b in self.buttons:
+                b.draw(self.screen)
+            
+            area_rect = pygame.Rect(10, 90, 1000-20, 150)
+            pygame.draw.rect(self.screen, Foundations.panel_color, area_rect, border_radius=8)
+            self.draw_text_block(self.base_text, area_rect.inflate(-24, -12), self.font, Foundations.text_color, leading=8)
+            
+            palette_rect = pygame.Rect(10, 260, 1000-20, 200)
+            pygame.draw.rect(self.screen, Foundations.panel_color, palette_rect, border_radius=8)
+            self.draw_palette(self.current_palette, palette_rect.inflate(-12, -12))
+
+            pygame.display.flip()
+            
+
+def main():
+    idea_gen = UILayout.IdeaGenerator()
+    clock = idea_gen.clock
+
+    while idea_gen.running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                idea_gen.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    idea_gen.running = False
+                if event.key == pygame.K_SPACE:
+                    idea_gen.generate_prompt()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for b in idea_gen.buttons:
+                    if b.mouse(event):
+                        idea_gen.update_button_states()
+                        break
+                                
+        idea_gen.update_button_states()
+        idea_gen.draw()
+        clock.tick(30)
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
