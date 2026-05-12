@@ -7,7 +7,7 @@ Demo Video: <https://youtu.be/MWwvn6eZgCY?si=ObazbwhTHk4HBpMj>
 GitHub Repo: <https://github.com/thecowgoesmoon/angm2305_finalProject/tree/main>
 
 ## Description
-This program primarily utilize PyGame, as it allows the user to choose a randomly generated art prompt based on a character or an environmental setting, as well as a color palette. The user can also choose whether or not the color palette will consist of three, four, or five colors.
+This program primarily utilizes PyGame, as it allows the user to choose a randomly generated art prompt based on a character or an environmental setting, as well as a color palette. The user can also choose whether or not the color palette will consist of three, four, or five colors.
 
 The user will first select between a color palette of either three, four, or five colors, with three being the default palette size. Once chosen, the program will output a color palette with the amount of colors that the user has chosen with the hex codes beneath each color. The user can re-roll their options an unlimited amount of times before choosing between a character or environment prompt generator.
 
